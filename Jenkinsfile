@@ -33,6 +33,18 @@ pipeline {
                 sh 'docker run --rm $IMAGE:latest python -m pytest -q'
             }
         }
+                stage('Push to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
+                    sh '''
+                        echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
+                        docker tag $IMAGE:latest $DH_USER/midterm-fa23-bds-022:latest
+                        docker push $DH_USER/midterm-fa23-bds-022:latest
+                        docker logout
+                    '''
+                }
+            }
+        }
 
         stage('Deploy') {
             steps {
